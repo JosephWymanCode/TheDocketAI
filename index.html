@@ -1493,7 +1493,16 @@
       });
     });
 
-    function handleSignup(event) {
+    // ─────────────────────────────────────────────────────────────────────────
+    // SUBSCRIPTION CONFIG
+    // After completing Beehiiv + Cloudflare Worker setup (see worker.js),
+    // replace the WORKER_URL value below with your deployed worker URL.
+    // Example: "https://docket-subscribe.yourname.workers.dev"
+    // Until then, the form falls back gracefully to the Beehiiv subscribe page.
+    // ─────────────────────────────────────────────────────────────────────────
+    const WORKER_URL = ""; // ← paste your Cloudflare Worker URL here after setup
+
+    async function handleSignup(event) {
       event.preventDefault();
       const form = event.currentTarget;
       const input = form.querySelector("input[type='email']");
@@ -1501,26 +1510,82 @@
       const email = input.value.trim();
       if (!email) return;
 
-      button.textContent = "Opening Beehiiv...";
-      button.disabled = true;
-      button.style.background = "#237A4B";
-      button.style.color = "#FFFFFF";
-      showToast();
+      // Already subscribed guard
+      if (localStorage.getItem("docket_subscribed") === "true") {
+        showToast("You're already subscribed! See you Tuesday.", "info");
+        return;
+      }
 
-      const url = `https://thedocket.beehiiv.com/subscribe?email=${encodeURIComponent(email)}`;
-      setTimeout(() => {
-        window.open(url, "_blank", "noopener,noreferrer");
-        button.textContent = "Subscribe Free ->";
-        button.disabled = false;
-        button.style.background = "";
-        button.style.color = "";
-      }, 500);
+      setFormState(form, "loading");
+
+      if (WORKER_URL) {
+        // ── LIVE PATH: POST to Cloudflare Worker → Beehiiv API ──
+        try {
+          const res = await fetch(WORKER_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+          });
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            setFormState(form, "success");
+            localStorage.setItem("docket_subscribed", "true");
+            showToast("🎉 Welcome to The Docket! First issue lands Tuesday.", "success");
+          } else if (res.status === 409 || data.code === "already_subscribed") {
+            setFormState(form, "reset");
+            showToast("You're already on the list — see you Tuesday!", "info");
+          } else {
+            throw new Error(data.message || "Unexpected error");
+          }
+        } catch (err) {
+          console.error("Subscription error:", err);
+          setFormState(form, "reset");
+          showToast("Something went wrong. Please try again.", "error");
+        }
+      } else {
+        // ── FALLBACK PATH: redirect to Beehiiv subscribe page ──
+        // Works immediately with no setup. Replace WORKER_URL above
+        // for a seamless in-page experience.
+        setFormState(form, "success");
+        localStorage.setItem("docket_subscribed", "true");
+        showToast("Redirecting to complete your subscription…", "info");
+        setTimeout(() => {
+          window.open(
+            `https://thedocket.beehiiv.com/subscribe?email=${encodeURIComponent(email)}`,
+            "_blank",
+            "noopener,noreferrer"
+          );
+          setFormState(form, "reset");
+        }, 900);
+      }
     }
 
-    function showToast() {
+    function setFormState(form, state) {
+      const input  = form.querySelector("input[type='email']");
+      const button = form.querySelector("button");
+      const states = {
+        loading: { text: "Subscribing…",    disabled: true,  bg: "",         color: "",          inputDisabled: true  },
+        success: { text: "✓ Subscribed!",   disabled: true,  bg: "#237A4B",  color: "#FFFFFF",   inputDisabled: true  },
+        error:   { text: "Try again →",     disabled: false, bg: "#B91C1C",  color: "#FFFFFF",   inputDisabled: false },
+        reset:   { text: "Subscribe Free →",disabled: false, bg: "",         color: "",          inputDisabled: false },
+      };
+      const s = states[state] || states.reset;
+      button.textContent     = s.text;
+      button.disabled        = s.disabled;
+      button.style.background = s.bg;
+      button.style.color     = s.color;
+      input.disabled         = s.inputDisabled;
+      if (state === "reset") input.value = "";
+    }
+
+    function showToast(message, type = "success") {
       const toast = document.getElementById("toast");
+      const colors = { success: "#237A4B", info: "#1B2A4A", error: "#B91C1C" };
+      toast.textContent = message;
+      toast.style.background = colors[type] || colors.success;
       toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 4200);
+      setTimeout(() => toast.classList.remove("show"), 4500);
     }
   </script>
 </body>
