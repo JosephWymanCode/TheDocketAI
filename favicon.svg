@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#1B2A4A"/>
+  <rect x="2.5" y="2.5" width="59" height="59" rx="12.5" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity="0.3"/>
+  <!-- Scales beam -->
+  <rect x="10" y="27" width="44" height="3" rx="1.5" fill="#C9A84C"/>
+  <!-- Center pillar -->
+  <rect x="30.5" y="27" width="3" height="20" rx="1.5" fill="#C9A84C"/>
+  <!-- Base -->
+  <rect x="20" y="47" width="24" height="3" rx="1.5" fill="#C9A84C"/>
+  <!-- Left pan -->
+  <path d="M10 30Q4 37 10 44Q16 51 22 44Q28 37 22 30Z" fill="none" stroke="#C9A84C" stroke-width="2.2" stroke-linejoin="round"/>
+  <line x1="16" y1="30" x2="16" y2="35" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/>
+  <!-- Right pan (slightly dipped) -->
+  <path d="M42 31.5Q36 38.5 42 45.5Q48 52.5 54 45.5Q60 38.5 54 31.5Z" fill="none" stroke="#C9A84C" stroke-width="2.2" stroke-linejoin="round" opacity="0.6"/>
+  <line x1="48" y1="30" x2="48" y2="36.5" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+</svg>

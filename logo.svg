@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 96" fill="none">
+  <defs>
+    <linearGradient id="goldG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C9A84C"/>
+      <stop offset="100%" stop-color="#E8C97A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon mark circle -->
+  <circle cx="48" cy="48" r="44" fill="#1B2A4A"/>
+  <circle cx="48" cy="48" r="40" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.35"/>
+
+  <!-- Scales beam -->
+  <rect x="22" y="44" width="52" height="3.5" rx="1.75" fill="url(#goldG)"/>
+  <!-- Center pillar -->
+  <rect x="46.25" y="44" width="3.5" height="26" rx="1.75" fill="url(#goldG)"/>
+  <!-- Base -->
+  <rect x="32" y="70" width="32" height="3.5" rx="1.75" fill="url(#goldG)"/>
+
+  <!-- Left pan -->
+  <path d="M22 47.5Q15 56 22 64Q29 72 36 64Q43 56 36 47.5Z" fill="none" stroke="url(#goldG)" stroke-width="2.2" stroke-linejoin="round"/>
+  <line x1="29" y1="47.5" x2="29" y2="53" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Right pan (slightly lower) -->
+  <path d="M60 49.5Q53 58 60 66Q67 74 74 66Q81 58 74 49.5Z" fill="none" stroke="#C9A84C" stroke-width="2.2" stroke-linejoin="round" opacity="0.62"/>
+  <line x1="67" y1="47.5" x2="67" y2="55" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" opacity="0.62"/>
+
+  <!-- Wordmark: "THE" -->
+  <text x="110" y="40" font-family="Georgia,'Playfair Display',serif" font-size="13" font-weight="700" fill="#C9A84C" letter-spacing="5">THE</text>
+
+  <!-- Wordmark: "DOCKET" -->
+  <text x="107" y="72" font-family="Georgia,'Playfair Display',serif" font-size="38" font-weight="700" fill="#1B2A4A" letter-spacing="2">DOCKET</text>
+
+  <!-- Rule -->
+  <line x1="107" y1="80" x2="475" y2="80" stroke="#C9A84C" stroke-width="0.8" opacity="0.4"/>
+
+  <!-- Tagline -->
+  <text x="107" y="90" font-family="'Inter',Arial,sans-serif" font-size="8" font-weight="600" fill="#8A8780" letter-spacing="3">AI INTELLIGENCE FOR ATTORNEYS</text>
+</svg>
