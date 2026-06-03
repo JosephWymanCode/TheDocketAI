@@ -10,5 +10,13 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
+  ],
+  "rate_limiting": [
+    {
+      "name": "RATE_LIMITER",
+      "threshold": 10,
+      "period": 60,
+      "action": "log"
+    }
   ]
 }
