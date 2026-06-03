@@ -156,6 +156,7 @@ Disallow: /wrangler.jsonc
 Disallow: /.dev.vars.example
 Crawl-delay: 10
 
+User-agent: *
 Allow: /
 
 Sitemap: https://thedocketai.news/sitemap.xml
