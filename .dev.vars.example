@@ -1,0 +1,9 @@
+# Copy this file to .dev.vars for local Cloudflare Worker development.
+# Run: wrangler dev
+# Never commit .dev.vars — it's already in .gitignore.
+
+BEEHIIV_API_KEY=your_beehiiv_api_key_here
+BEEHIIV_PUBLICATION_ID=pub_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+# Comma-separated origins allowed during local dev (never set these in production)
+DEV_ORIGINS=http://localhost:3000,http://127.0.0.1:5500
