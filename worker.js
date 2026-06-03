@@ -18,34 +18,23 @@
  *                             looks like: pub_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
  *
  * 5. Copy your Worker URL (e.g. https://docket-subscribe.yourname.workers.dev)
- * 6. Paste it into index.html as the WORKER_URL value
+ * 6. Paste it into main.js as the WORKER_URL value
  *
  * For local dev, copy .dev.vars.example to .dev.vars and fill in your values.
  * Free tier: 100,000 requests/day — more than enough for a newsletter.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-const PRODUCTION_ORIGINS = [
-  "https://thedocketai.news",
-  "https://josephwymancode.github.io",
-];
-
 export default {
   async fetch(request, env) {
-    const origin = request.headers.get("Origin") || "";
-
-    // Merge in dev origins from environment variable (set in .dev.vars locally, absent in production)
-    const devOrigins = env.DEV_ORIGINS ? env.DEV_ORIGINS.split(",").map(s => s.trim()) : [];
-    const ALLOWED_ORIGINS = [...PRODUCTION_ORIGINS, ...devOrigins];
-
     // ── CORS preflight ──
     if (request.method === "OPTIONS") {
-      return corsResponse(null, 204, origin, ALLOWED_ORIGINS);
+      return corsResponse(null, 204);
     }
 
     // ── Only accept POST ──
     if (request.method !== "POST") {
-      return corsResponse({ error: "Method not allowed" }, 405, origin, ALLOWED_ORIGINS);
+      return corsResponse({ error: "Method not allowed" }, 405);
     }
 
     // ── Parse body ──
@@ -54,12 +43,12 @@ export default {
       const body = await request.json();
       email = (body.email || "").trim().toLowerCase();
     } catch {
-      return corsResponse({ success: false, message: "Invalid JSON" }, 400, origin, ALLOWED_ORIGINS);
+      return corsResponse({ success: false, message: "Invalid JSON" }, 400);
     }
 
     // ── Basic email validation ──
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return corsResponse({ success: false, message: "Invalid email address" }, 400, origin, ALLOWED_ORIGINS);
+      return corsResponse({ success: false, message: "Invalid email address" }, 400);
     }
 
     // ── Rate limiting (10 requests per 60s per IP) ──
@@ -67,7 +56,7 @@ export default {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       const { success: allowed } = await env.RATE_LIMITER.limit({ key: ip });
       if (!allowed) {
-        return corsResponse({ success: false, message: "Too many requests — please wait." }, 429, origin, ALLOWED_ORIGINS);
+        return corsResponse({ success: false, message: "Too many requests — please wait." }, 429);
       }
     }
 
@@ -94,39 +83,31 @@ export default {
       );
     } catch (err) {
       console.error("Beehiiv fetch error:", err);
-      return corsResponse({ success: false, message: "Network error reaching Beehiiv" }, 502, origin, ALLOWED_ORIGINS);
+      return corsResponse({ success: false, message: "Network error reaching Beehiiv" }, 502);
     }
 
     const beehiivData = await beehiivRes.json().catch(() => ({}));
 
     // ── Handle Beehiiv responses ──
     if (beehiivRes.status === 201 || beehiivRes.status === 200) {
-      return corsResponse({ success: true, message: "Subscribed successfully" }, 200, origin, ALLOWED_ORIGINS);
+      return corsResponse({ success: true, message: "Subscribed successfully" }, 200);
     }
 
     if (beehiivRes.status === 409 || beehiivData?.errors?.[0]?.includes("already")) {
-      return corsResponse({ success: false, code: "already_subscribed", message: "Already subscribed" }, 409, origin, ALLOWED_ORIGINS);
+      return corsResponse({ success: false, code: "already_subscribed", message: "Already subscribed" }, 409);
     }
 
     // ── Unexpected Beehiiv error — log and return generic message ──
     console.error("Beehiiv error:", beehiivRes.status, JSON.stringify(beehiivData));
-    return corsResponse({ success: false, message: "Subscription failed — please try again" }, 500, origin, ALLOWED_ORIGINS);
+    return corsResponse({ success: false, message: "Subscription failed — please try again" }, 500);
   },
 };
 
-// ── Helper: JSON response with CORS headers ──
-function corsResponse(body, status, origin, allowedOrigins) {
-  const isAllowed = allowedOrigins.includes(origin);
-  // Reject non-preflight requests from unlisted origins
-  if (body !== null && !isAllowed) {
-    return new Response(JSON.stringify({ success: false, message: "Forbidden" }), {
-      status: 403,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+// Public newsletter signup — allow all origins, no credentials involved
+function corsResponse(body, status) {
   const headers = {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": isAllowed ? origin : allowedOrigins[0],
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Max-Age": "86400",
