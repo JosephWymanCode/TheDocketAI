@@ -9,14 +9,14 @@
   <meta name="author" content="The Docket" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="theme-color" content="#1B2A4A" />
-  <link rel="canonical" href="https://thedocket.ai/" />
+  <link rel="canonical" href="https://thedocketai.news/" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://thedocket.ai/" />
+  <meta property="og:url" content="https://thedocketai.news/" />
   <meta property="og:title" content="The Docket | Weekly AI Briefing for Practicing Attorneys" />
   <meta property="og:description" content="Honest legal AI news, tool reviews, and ready-to-use prompts for attorneys who actually practice law." />
   <meta property="og:site_name" content="The Docket" />
   <meta property="og:locale" content="en_US" />
-  <meta property="og:image" content="https://thedocket.ai/logo.svg" />
+  <meta property="og:image" content="https://thedocketai.news/logo.svg" />
   <meta property="og:image:alt" content="The Docket — AI briefing for practicing attorneys" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -25,7 +25,7 @@
   <meta name="twitter:creator" content="@TheDocketAI" />
   <meta name="twitter:title" content="The Docket | Weekly AI Briefing for Practicing Attorneys" />
   <meta name="twitter:description" content="A practical weekly AI briefing for working attorneys. No hype, no vendor marketing." />
-  <meta name="twitter:image" content="https://thedocket.ai/logo.svg" />
+  <meta name="twitter:image" content="https://thedocketai.news/logo.svg" />
   <meta name="twitter:image:alt" content="The Docket — AI briefing for practicing attorneys" />
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -40,15 +40,15 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "The Docket",
-      "url": "https://thedocket.ai/",
+      "url": "https://thedocketai.news/",
       "description": "The weekly AI newsletter for practicing attorneys. Honest legal AI news, tool reviews, and ready-to-use prompts every Tuesday morning.",
       "publisher": {
         "@type": "Organization",
         "name": "The Docket",
-        "url": "https://thedocket.ai/",
+        "url": "https://thedocketai.news/",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://thedocket.ai/logo.svg"
+          "url": "https://thedocketai.news/logo.svg"
         }
       }
     },
@@ -56,8 +56,8 @@
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "The Docket",
-      "url": "https://thedocket.ai/",
-      "logo": "https://thedocket.ai/logo.svg",
+      "url": "https://thedocketai.news/",
+      "logo": "https://thedocketai.news/logo.svg",
       "description": "A weekly AI briefing for practicing attorneys covering legal AI news, honest tool reviews, and ready-to-use prompts.",
       "knowsAbout": ["Legal Technology", "Artificial Intelligence", "Law Practice Management", "Legal Research"],
       "audience": {
@@ -69,13 +69,13 @@
       "@context": "https://schema.org",
       "@type": "Periodical",
       "name": "The Docket",
-      "url": "https://thedocket.ai/",
+      "url": "https://thedocketai.news/",
       "description": "Weekly AI briefing for practicing attorneys published every Tuesday at 7am ET.",
       "issueFrequency": "Weekly",
       "publisher": {
         "@type": "Organization",
         "name": "The Docket",
-        "url": "https://thedocket.ai/"
+        "url": "https://thedocketai.news/"
       },
       "about": [
         {"@type": "Thing", "name": "Legal Technology"},
@@ -1507,6 +1507,7 @@
     <div class="footer-bottom">
       <span>&copy; 2026 The Docket Newsletter.</span>
       <span>Built for attorneys who want useful AI analysis without the noise.</span>
+      <a href="/privacy.html" style="color:inherit;opacity:0.7;">Privacy Policy</a>
     </div>
   </footer>
 
@@ -1590,12 +1591,16 @@
 
       if (WORKER_URL) {
         // ── LIVE PATH: POST to Cloudflare Worker → Beehiiv API ──
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10_000);
         try {
           const res = await fetch(WORKER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ email }),
+            signal: controller.signal
           });
+          clearTimeout(timer);
           const data = await res.json();
 
           if (res.ok && data.success) {
@@ -1609,9 +1614,14 @@
             throw new Error(data.message || "Unexpected error");
           }
         } catch (err) {
+          clearTimeout(timer);
           console.error("Subscription error:", err);
+          const msg =
+            err.name === "AbortError"   ? "Request timed out — please check your connection and try again."
+            : err instanceof TypeError  ? "Network error — please check your connection."
+            :                             "Subscription failed — please try again.";
           setFormState(form, "reset");
-          showToast("Something went wrong. Please try again.", "error");
+          showToast(msg, "error");
         }
       } else {
         // ── FALLBACK PATH: redirect to Beehiiv subscribe page ──
@@ -1646,6 +1656,7 @@
       button.style.background = s.bg;
       button.style.color     = s.color;
       input.disabled         = s.inputDisabled;
+      form.setAttribute("aria-busy", state === "loading" ? "true" : "false");
       if (state === "reset") input.value = "";
     }
 
