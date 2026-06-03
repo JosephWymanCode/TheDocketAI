@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Docket | Weekly AI Briefing for Practicing Attorneys</title>
   <meta name="description" content="The weekly AI newsletter for practicing attorneys. Honest legal AI news, tool reviews, and ready-to-use prompts every Tuesday morning." />
-  <link rel="canonical" href="https://thedocket.ai/" />
+  <link rel="canonical" href="https://thedocketai.news/" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://thedocket.ai/" />
+  <meta property="og:url" content="https://thedocketai.news/" />
   <meta property="og:title" content="The Docket | Weekly AI Briefing for Practicing Attorneys" />
   <meta property="og:description" content="Honest legal AI news, tool reviews, and ready-to-use prompts for attorneys who actually practice law." />
   <meta property="og:site_name" content="The Docket" />
@@ -17,7 +17,7 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="alternate icon" href="favicon.svg" />
-  <meta property="og:image" content="https://josephwymancode.github.io/TheDocketAI/logo.svg" />
+  <meta property="og:image" content="https://thedocketai.news/logo.svg" />
   <meta name="twitter:image" content="https://josephwymancode.github.io/TheDocketAI/logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1437,6 +1437,7 @@
     <div class="footer-bottom">
       <span>&copy; 2026 The Docket Newsletter.</span>
       <span>Built for attorneys who want useful AI analysis without the noise.</span>
+      <a href="/privacy.html" style="color:inherit;opacity:0.7;">Privacy Policy</a>
     </div>
   </footer>
 
@@ -1520,12 +1521,16 @@
 
       if (WORKER_URL) {
         // ── LIVE PATH: POST to Cloudflare Worker → Beehiiv API ──
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10_000);
         try {
           const res = await fetch(WORKER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ email }),
+            signal: controller.signal
           });
+          clearTimeout(timer);
           const data = await res.json();
 
           if (res.ok && data.success) {
@@ -1539,9 +1544,14 @@
             throw new Error(data.message || "Unexpected error");
           }
         } catch (err) {
+          clearTimeout(timer);
           console.error("Subscription error:", err);
+          const msg =
+            err.name === "AbortError"   ? "Request timed out — please check your connection and try again."
+            : err instanceof TypeError  ? "Network error — please check your connection."
+            :                             "Subscription failed — please try again.";
           setFormState(form, "reset");
-          showToast("Something went wrong. Please try again.", "error");
+          showToast(msg, "error");
         }
       } else {
         // ── FALLBACK PATH: redirect to Beehiiv subscribe page ──
@@ -1576,6 +1586,7 @@
       button.style.background = s.bg;
       button.style.color     = s.color;
       input.disabled         = s.inputDisabled;
+      form.setAttribute("aria-busy", state === "loading" ? "true" : "false");
       if (state === "reset") input.value = "";
     }
 
